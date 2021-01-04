@@ -8,6 +8,7 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.expressions._
 import org.apache.spark.sql.types._
 import org.apache.hadoop.fs._
+import org.apache.spark.sql.expressions.UserDefinedFunction
 
 
 object sparkBigData {
@@ -25,7 +26,7 @@ object sparkBigData {
     StructField("orderid", IntegerType, false),
     StructField("customerid", IntegerType, false),
     StructField("campaignid", IntegerType, true),
-    StructField("orderdate", TimestampType, true), <
+    StructField("orderdate", TimestampType, true),
     StructField("city", StringType, true),
     StructField("state", StringType, true),
     StructField("zipcode", StringType, true),
@@ -297,11 +298,41 @@ object sparkBigData {
       .withColumn("productln", length(col("PRODUCTGROUPNAME")))
       .withColumn("concatProduct", concat_ws("|", col("PRODUCTID"), col("INSTOCKFLAG")))
       .withColumn("PRODUCTGROUPCODEMIN", lower(col("PRODUCTGROUPCODE")))
+
       // Contruction des motifs de correspondance des Expressions Régulières pour une validation dans un projet...
       .where(regexp_extract(trim(col("PRODUCTID")), "[0-9]{5}",0) === trim(col("PRODUCTID")))
       .where(!col("PRODUCTID").rlike("[0-9]{5}"))
       //.count()
-      .show(10)
+     // .show(10)
+
+  // UDF : UserDefineFunction :
+    // 1) Créer une fonction classique "de base ou Spark.sql.type"  ,
+    // 2) définir une fonction udf et
+    // 3) mettre tous dans DataFrame
+
+    // 1ère étape :
+    def valid_phone(phone_to_test : String) : Boolean = {
+      var result : Boolean = false
+      val motif_regex = "^0[0-9]{9}".r
+        if(motif_regex.findAllIn(phone_to_test.trim) == phone_to_test.trim){
+          result = true
+        } else {
+          result = false
+        }
+      return result
+    }
+ // 2ème étape : Définir une fonction comme du type udf.
+    // Pour cela, il faut d'abord importer le module Spark.sql.expressions.UserDefineFunction
+
+  val valid_phoneUDF : UserDefinedFunction = udf{(phone_to_test : String) => valid_phone(phone_to_test : String)}
+
+    // 3ème étape : DataFrame
+
+    import session_s.implicits._
+    val phone_list : DataFrame = List("0709789486", "+3307897025", "8794007834").toDF("phone_number")
+    phone_list
+      .withColumn("test_phone", valid_phoneUDF(col("phone_number")))
+      .show()
 
     // Persistance : elle se faite soit en csv, orc, parquet, etc.
 
