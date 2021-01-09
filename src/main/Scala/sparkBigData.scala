@@ -10,6 +10,7 @@ import org.apache.spark.sql.types._
 import org.apache.hadoop.fs._
 import org.apache.spark.sql.expressions.UserDefinedFunction
 
+// Class Objet "sparkBigData" dans laquelle on crée une session Spark
 
 object sparkBigData {
   var ss : SparkSession = null
@@ -599,7 +600,21 @@ object sparkBigData {
       //System.setProperty("hadoop.home.dir", "/Users/sekoubafofana/sparkStreaminIntelliJ/Hadoop")
       ss = SparkSession.builder
         .master(master = "local[*]")
-        // .enableHiveSupport()
+        // .enableHiveSupport(), on met le commentaire sur cette ligne decommande parce que on est pas sur cluster
+                                // vouloir l'exécuter, entrainera une erreur qui indique la class de Hive non trouvable.
+                                // Pour qu'elle s'exécute normalement, il faut être en cluster où on l'adresse des tables de Hive (Métadonnées)
+                            // Pour éviter alors le conflit de dépendance, il faut ajouter dans le POM, la dépendance ci-dessous.
+        /*
+        <!-- https://mvnrepository.com/artifact/org.apache.spark/spark-hive -->
+<dependency>
+    <groupId>org.apache.spark</groupId>
+    <artifactId>spark-hive_2.11</artifactId>
+    <version>2.2.0</version>
+    <scope>provided</scope>
+</dependency>
+
+         */
+
         .getOrCreate()
     } else {
       val ss : SparkSession = SparkSession.builder()
