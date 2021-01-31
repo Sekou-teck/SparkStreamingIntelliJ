@@ -12,7 +12,7 @@ object spark_DBMysql {
     val props_mysql = new Properties()
     props_mysql.put("user", "consultant")
     props_mysql.put("password", "pwd#86")
-    val df_mysql = ss.read.jdbc("jdbc:mysql://127.0.0.1:3306/jea_db?zeroDateTimeBihavior=CONVERT_TO_NULL&serverTimezone=UTC", "jea_db.orders",props_mysql)
+    val df_mysql = ss.read.jdbc("jdbc:mysql://127.0.0.1:3306/jea_db?zeroDateTimeBihavior=CONVERT_TO_NULL&serverTimezone=UTC", "table_sub",props_mysql)
 
     df_mysql.show(20)
     df_mysql.printSchema()
